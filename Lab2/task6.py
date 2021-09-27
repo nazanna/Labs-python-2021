@@ -6,6 +6,7 @@ from random import *
 turtle.color('Gray')
 turtle.shape('turtle')
 a = 100
+n = 12
 
 for i in range(n):
     turtle.right(360 / n)
