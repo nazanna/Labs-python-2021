@@ -163,7 +163,7 @@ class Lama:
         # lama's rectangle
         self.coords = (random.randrange(0, display_size[0]),
                        random.randrange(int(self.size_rect[1]),
-                       int(int(display_size[1] - 0.5 * self.size_rect[1]))))
+                                        int(int(display_size[1] - 0.5 * self.size_rect[1]))))
         # lama's coordinates
         self.life = True
 
@@ -255,6 +255,7 @@ def write_table(array, surface, pos):
         line_delta = 0
     # print table on the surface
 
+
 pool = []
 n = random.randint(2, 40)
 number_of_objects = n
@@ -277,6 +278,7 @@ finished = False
 
 name = ''
 enter_name = False
+append_new_result = True
 
 # take information about previous games
 with open('Results.yaml') as file:
@@ -298,13 +300,18 @@ while not finished:
                 name += event.unicode
         else:
             # react for some action of mouse
-            for i in range(n):
-                reaction = pool[i].reaction(event)
-                if reaction != 0:
-                    number_of_objects -= 1
-                if reaction < 0:
-                    number_of_lamas -= 1
-                score += int(reaction)
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
+                pool.append(Ball())
+                n += 1
+                number_of_objects += 1
+            else:
+                for i in range(n):
+                    reaction = pool[i].reaction(event)
+                    if reaction != 0:
+                        number_of_objects -= 1
+                    if reaction < 0:
+                        number_of_lamas -= 1
+                    score += int(reaction)
 
     if enter_name:
         if number_of_objects <= number_of_lamas:
@@ -315,7 +322,9 @@ while not finished:
                        (display_size[0] / 2, display_size[1] / 3 + 40))
             # write motivation text
 
-            data['results'].append({'score': score, 'name': name})
+            if append_new_result:
+                data['results'].append({'score': score, 'name': name})
+                append_new_result = False
             scores = sorted([[i['score'], i['name']] for i in data['results']])
             scores.reverse()
             scores = [[j[1], j[0]] for j in scores]
@@ -332,6 +341,8 @@ while not finished:
 
             write_text('Score: ' + str(score), screen,
                        (display_size[0] - 160, display_size[1] - 100))
+            write_text('If you want to add new ball, click on the mouse wheel',
+                       screen, (0, 0))
         # write text about score
 
     else:
