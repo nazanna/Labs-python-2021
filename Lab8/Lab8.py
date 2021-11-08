@@ -3,6 +3,7 @@ from random import choice
 from random import randint
 from random import randrange
 import pygame
+import yaml
 
 
 FPS = 30
@@ -25,6 +26,8 @@ HEIGHT = 600
 class Game:
     def __init__(self):
         win = False
+        with open('Results.yaml') as file:
+            data = yaml.load(file)        
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         score = 0
@@ -42,6 +45,7 @@ class Game:
         enter_c = False
         enter_e = False
         final = False
+        add_result = False
         enter_name = False
         name = ''
 
@@ -77,6 +81,7 @@ class Game:
                         self.balls = []
                         gun = Gun()
                         targets = []
+                        add_result = False
                         for _ in range(2):
                             targets.append(SquareTarget(self.screen))
                         enter_c = False
@@ -86,16 +91,25 @@ class Game:
                             # промежуточное состояние: текущая игра закончилась, ожидание следующих действий
                             write_text('Press C to continue', self.screen, (WIDTH / 2, HEIGHT - 100))
                             write_text('Press E to exit', self.screen, (WIDTH / 2, HEIGHT - 70))
-
-                        # отсутствие текущей игры, демонстрация очков
-                        sum_number += number
-                        number = 0
-                        cel = word_form(score, 'цель', 'цели', 'целей')
-                        vistr = word_form(sum_number, 'выстрел', 'выстрела', 'выстрелов')
-                        s1 = 'Вы, уважаемый, ' + name
-                        s2 = 'уничтожили ' + str(score) + ' ' + cel + ' за ' + str(sum_number) + ' ' + vistr + '!'
-                        write_text(s1, self.screen, (WIDTH / 4, HEIGHT / 2))
-                        write_text(s2, self.screen, (WIDTH / 4, HEIGHT / 2 + 30))
+                            # отсутствие текущей игры, демонстрация очков
+                            sum_number += number
+                            number = 0
+                            cel = word_form(score, 'цель', 'цели', 'целей')
+                            vistr = word_form(sum_number, 'выстрел', 'выстрела', 'выстрелов')
+                            s1 = 'Вы, уважаемый, ' + name
+                            s2 = 'уничтожили ' + str(score) + ' ' + cel + ' за ' + str(sum_number) + ' ' + vistr + '!'
+                            write_text(s1, self.screen, (WIDTH / 4, HEIGHT / 2))
+                            write_text(s2, self.screen, (WIDTH / 4, HEIGHT / 2 + 30))
+                        else:
+                            if not add_result:
+                                add_result = True
+                                data['results'].append({'score': score, 'name': name})
+                            scores = sorted([[i['score'], i['name']] for i in data['results']])
+                            scores.reverse()
+                            scores = [[j[1], j[0]] for j in scores]
+                            y_of_line = HEIGHT / 3
+                            write_text('Table of less losers of game:', self.screen, (20, y_of_line))
+                            write_table(scores[0:5], self.screen, (20, y_of_line + 50))                            
             else:
                 write_text('Введите имя!!!', self.screen, (100, 100))
                 write_text(name, self.screen, (100, 130))
@@ -120,7 +134,9 @@ class Game:
                     enter_c = True
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
                     enter_e = True
-
+                    
+        with open('Results.yaml', 'w') as file:
+            yaml.dump(data, file)
         pygame.quit()
 
 
@@ -392,5 +408,30 @@ def word_form(quantity, form1, form2, form5):
     else:
         return form2
 
+def write_table(array, surface, pos):
+    '''
+    write table on some surface
+    text - wanting text
+    surface - wanting surface
+    pos - (x, y) - coordinates of left corner
+    '''
+    font = pygame.font.Font(None, 36)
+    line_size = [0 for _ in array[0]]
+    # array of size of columns of table
+    for i in array:
+        for j in i:
+            if font.size(str(j))[0] > line_size[i.index(j)]:
+                line_size[i.index(j)] = font.size(str(j))[0]
+    line_size = [i + font.size('   ')[0] for i in line_size]
+
+    y_of_line = pos[1]
+    line_delta = 0
+    for i in array:
+        for j in i:
+            write_text(str(j), surface, (pos[0] + line_delta, y_of_line))
+            line_delta += line_size[i.index(j)]
+        y_of_line += 30
+        line_delta = 0
+    # print table on the surface
 
 game = Game()
