@@ -122,7 +122,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                             finished = True
-                if event.type == pygame.MOUSEMOTION or event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP:
+                if event.type == pygame.MOUSEMOTION or event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYDOWN:
                     # подсчет выстрелов
                     number += gun.reaction(event, self)
                 if event.type == pygame.KEYDOWN and not enter_name:
@@ -296,6 +296,8 @@ class Gun:
         '''
         if event.type == pygame.MOUSEMOTION:
             self.motion(event)
+        if event.type == pygame.KEYDOWN and (event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT):
+            self.move(event)
         if event.type == pygame.MOUSEBUTTONUP:
             self.up(obj)
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -324,6 +326,15 @@ class Gun:
         self.power = 4
         self.cond = False
 
+    def move(self, event):
+        '''
+        движение пушки при тыкании на клавиши
+        event - событие тыкания
+        '''
+        if event.key == pygame.K_RIGHT:
+            self.x += 10
+        if event.key == pygame.K_LEFT:
+            self.x -= 10
 
 class Target(Moving_Objects):
     def __init__(self, screen, lost, ax, ay, x, y, vx, vy, l, color):
