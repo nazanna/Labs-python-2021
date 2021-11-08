@@ -24,6 +24,7 @@ HEIGHT = 600
 
 
 class Game:
+    #класс обработчик игры
     def __init__(self):
         win = False
         with open('Results.yaml') as file:
@@ -96,11 +97,12 @@ class Game:
                             number = 0
                             cel = word_form(score, 'цель', 'цели', 'целей')
                             vistr = word_form(sum_number, 'выстрел', 'выстрела', 'выстрелов')
-                            s1 = '¬ы, уважаемый, ' + name
+                            s1 = '¬ы, уважаемый ' + name+' ,'
                             s2 = 'уничтожили ' + str(score) + ' ' + cel + ' за ' + str(sum_number) + ' ' + vistr + '!'
                             write_text(s1, self.screen, (WIDTH / 4, HEIGHT / 2))
                             write_text(s2, self.screen, (WIDTH / 4, HEIGHT / 2 + 30))
                         else:
+                            #add results and print table of results
                             if not add_result:
                                 add_result = True
                                 data['results'].append({'score': score, 'name': name})
@@ -111,6 +113,7 @@ class Game:
                             write_text('Table of less losers of game:', self.screen, (20, y_of_line))
                             write_table(scores[0:5], self.screen, (20, y_of_line + 50))                            
             else:
+                #ожидание ввода имени
                 write_text('¬ведите им€!!!', self.screen, (100, 100))
                 write_text(name, self.screen, (100, 130))
             pygame.display.update()
@@ -190,11 +193,18 @@ class Moving_Objects:
         # отражение от горизонтальных стен
 
     def reflect(self, obj):
+        '''
+        отражение от других объектов
+        obj - объект,с которым провер€етс€ взаимодействие
+        '''
         if (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= (self.l + obj.l) ** 2:
+            #проверка сближени€
             alpha = math.atan((self.y - obj.y) / (self.x - obj.x))
             vpself = self.vy * math.sin(alpha) + self.vx * math.cos(alpha)
             vpobj = obj.vy * math.sin(alpha) + obj.vx * math.cos(alpha)
+            #вычисление составл€ющей скорости, параллельной линии, соедин€ющей центры шаров
             if vpself * vpobj < 0:
+                #изменение сокоростей при сближении
                 vparself = -self.vy * math.cos(alpha) + self.vx * math.sin(alpha)
                 vparobj = -obj.vy * math.cos(alpha) + obj.vx * math.sin(alpha)
                 vpself *= -1
@@ -209,6 +219,11 @@ class Ball(Moving_Objects):
     def __init__(self, screen: pygame.Surface, x=40, y=450, vx=2, vy=0):
         '''
         инициализаци€ класса м€чей
+        screen - экран дл€ отрисовки
+        x - координата x
+        y - координата y
+        vx - скорость по горизонтали
+        vy - скорость по вертикали
         '''
         super().__init__(screen, x=x, y=y, vx=vx, vy=vy, ax=0, ay=40, lost=0.6, color=choice(GAME_COLORS), l=10)
         self.r = self.l
@@ -276,6 +291,8 @@ class Gun:
         движение при движении мышки
         изменение состо€ни€ при нажатии клавиши
         отпускание при отпускании клавиши
+        event - событи€
+        obj - объект игры
         '''
         if event.type == pygame.MOUSEMOTION:
             self.motion(event)
@@ -298,6 +315,7 @@ class Gun:
     def up(self, obj):
         '''
         создание м€ча, задание ему начальных скоростей при выстеле пушки
+        obj - объект текущей игры
         '''
         vx = self.power ** 1.5 * math.cos(self.angle)
         vy = -self.power ** 1.5 * math.sin(self.angle)
